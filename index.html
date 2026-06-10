@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مدیریت دانش‌آموزان</title>
+<style>
+body {
+    font-family: Tahoma, sans-serif;
+    background: #f4f6fb;
+    margin: 0;
+    padding: 20px;
+    color: #222;
+}
+
+/* کارت‌ها */
+.box {
+    background: #fff;
+    padding: 16px;
+    margin-bottom: 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+/* تیترها */
+h2, h3 {
+    margin: 0 0 10px 0;
+}
+
+/* دکمه‌ها */
+button {
+    padding: 6px 12px;
+    margin: 2px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: 0.2s;
+}
+
+button:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
+}
+
+/* دکمه‌های اصلی */
+button.sent {
+    background: #22c55e !important;
+    color: white !important;
+}
+
+button.need-plan {
+    background: #f59e0b !important;
+    color: #111 !important;
+}
+
+
+/* input */
+input {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    outline: none;
+    width: 220px;
+}
+
+input:focus {
+    border-color: #3b82f6;
+}
+
+/* جدول */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+th {
+    background: #3b82f6;
+    color: white;
+    padding: 12px;
+    font-size: 14px;
+}
+
+td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+    font-size: 13px;
+}
+
+tr:hover {
+    background: #f9fafb;
+}
+
+/* وضعیت‌ها */
+td[style*="red"] {
+    color: #ef4444 !important;
+    font-weight: bold;
+}
+
+td[style*="orange"] {
+    color: #f59e0b !important;
+    font-weight: bold;
+}
+
+td[style*="green"] {
+    color: #22c55e !important;
+    font-weight: bold;
+}
+
+/* لیست‌ها */
+ul {
+    padding: 0;
+    list-style: none;
+}
+
+ul li {
+    padding: 6px 10px;
+    background: #f9fafb;
+    margin-bottom: 6px;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+/* دکمه‌های عملیات خاص */
+button:nth-child(1) {
+    background: #3b82f6;
+    color: white;
+}
+
+button:nth-child(2) {
+    background: #64748b;
+    color: white;
+}
+
+button[onclick*="deleteStudent"] {
+    background: #111;
+    color: white;
+}
+
+button[onclick*="deleteStudent"]:hover {
+    background: #000;
+    transform: scale(1.05);
+}
+
+button:nth-child(3) {
+    background: #ef4444;
+    color: white;
+}
+
+/* سرچ و header */
+.box input {
+    margin-top: 8px;
+}
+
+ul {
+    padding: 0;
+    margin: 0;
+}
+
+/* کانتینر لیست‌ها (حالت کارت کلی) */
+#overdue,
+#today {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* کارت آیتم */
+#overdue li,
+#today li {
+    list-style: none;
+    min-width: 140px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    transition: 0.2s;
+    cursor: default;
+}
+
+/* حالت عقب‌افتاده (قرمز حرفه‌ای) */
+#overdue li {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+/* حالت امروز (طلایی/نارنجی) */
+#today li {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+    border: 1px solid #fcd34d;
+}
+
+/* hover کارت‌ها */
+#overdue li:hover,
+#today li:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+}
+
+/* اسم داخل کارت کمی تمیزتر */
+#overdue li,
+#today li {
+    letter-spacing: 0.3px;
+}
+</style>
+<link rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/persian-date/dist/persian-date.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/persian-date/dist/persian-date.min.js"></script>
+</head>
+<body>
+
+<div class="box">
+<h2>پنل مدیریت دانش‌آموزان</h2>
+<button onclick="addStudent()">افزودن دانش‌آموز</button>
+<input id="search" placeholder="جستجو..." onkeyup="render()">
+</div>
+
+<div class="box">
+<h3>تماس‌های عقب‌افتاده</h3>
+<ul id="overdue"></ul>
+<h3>تماس‌های امروز</h3>
+<ul id="today"></ul>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>نام</th>
+<th>آخرین تماس</th>
+<th>تماس بعدی</th>
+<th>وضعیت</th>
+<th>برنامه</th>
+<th>عملیات</th>
+</tr>
+</thead>
+<tbody id="students"></tbody>
+</table>
+
+<div class="box">
+<h3>دانش‌آموزان کنسل شده</h3>
+<ul id="cancelled"></ul>
+</div>
+
+<script>
+let students = JSON.parse(
+    localStorage.getItem("students") || "[]"
+);
+
+function save() {
+
+    localStorage.setItem(
+        "students",
+        JSON.stringify(students)
+    );
+
+    render();
+}
+
+function todayDate() {
+
+    return new persianDate()
+        .format("YYYY/MM/DD");
+}
+
+function addDaysToJalali(days){
+
+    const p = new persianDate();
+
+    p.add('day', days);
+
+    return p.format("YYYY/MM/DD");
+}
+
+function todayTimestamp() {
+    return new Date().setHours(0, 0, 0, 0);
+}
+
+function toEnglishNumber(str) {
+    return str.replace(/[۰-۹]/g, d =>
+        "0123456789"["۰۱۲۳۴۵۶۷۸۹".indexOf(d)]
+    );
+}
+
+function jalaliToNumber(dateStr) {
+    if (!dateStr) return 0;
+
+    dateStr = toEnglishNumber(dateStr);
+
+    const parts = dateStr.split("/");
+
+    if (parts.length !== 3) return 0;
+
+    const year = parts[0].padStart(4, "0");
+    const month = parts[1].padStart(2, "0");
+    const day = parts[2].padStart(2, "0");
+
+    return Number(year + month + day);
+}
+
+function jalaliToDate(dateStr) {
+    dateStr = toEnglishNumber(dateStr);
+
+    const [y, m, d] = dateStr.split("/").map(Number);
+
+    // استفاده از persianDate فقط برای parse
+    return new persianDate([y, m, d]).toDate();
+}
+
+function dateToJalali(date) {
+    return new persianDate(date).format("YYYY/MM/DD");
+}
+
+function addDays(date, days) {
+    const d = new Date(date);
+    d.setDate(d.getDate() + days);
+    return d;
+}
+
+function status(nextCall) {
+
+    if (!nextCall) return "نامشخص";
+
+    const today = todayTimestamp();
+    const target = jalaliToDate(nextCall).setHours(0,0,0,0);
+
+    if (target < today) return "رد شده";
+    if (target === today) return "امروز";
+    return "آینده";
+}
+
+function addStudent() {
+
+    let name =
+        prompt("نام دانش آموز");
+
+    if (!name) return;
+
+    let next =
+        prompt(
+            "تاریخ تماس بعدی\nمثال:\n1405/03/20"
+        );
+
+    if (!next) return;
+
+    students.push({
+
+        name: name,
+
+        lastCall: "-",
+
+        nextCall: next,
+
+        planSent: false,
+
+        cancelled: false
+
+    });
+
+    save();
+}
+
+function callDone(i) {
+
+    let choice = prompt(
+`تاریخ تماس بعدی:
+
+1 = فردا
+2 = سه روز بعد
+3 = یک هفته بعد
+4 = تاریخ دلخواه`
+    );
+
+    if (!choice) return;
+
+    let nextDate;
+
+    const now = new Date();
+
+    switch (choice) {
+
+        case "1":
+            nextDate = addDays(now, 1);
+            break;
+
+        case "2":
+            nextDate = addDays(now, 3);
+            break;
+
+        case "3":
+            nextDate = addDays(now, 7);
+            break;
+
+        case "4":
+            const custom = prompt("مثال: 1405/03/25");
+            if (!custom) return;
+            nextDate = jalaliToDate(custom);
+            break;
+
+        default:
+            return;
+    }
+
+    students[i].lastCall = dateToJalali(new Date());
+    students[i].nextCall = dateToJalali(nextDate);
+
+    students[i].planSent = false;
+
+    save();
+}
+function getPlanButtonState(s) {
+
+    const st = status(s.nextCall);
+
+    if (!s.planSent) {
+        return {
+            class: "need-plan",
+            text: "⚠ نیاز به ارسال برنامه"
+        };
+    }
+
+    if (st === "آینده") {
+        return {
+            class: "sent",
+            text: "✓ برنامه ارسال شد"
+        };
+    }
+
+    // ❌ هیچ تغییر state اینجا نداریم
+    return {
+        class: "need-plan",
+        text: "⚠ نیاز به ارسال برنامه"
+    };
+}
+function editStudent(i) {
+
+    let newName =
+        prompt(
+            "نام دانش آموز",
+            students[i].name
+        );
+
+    if (!newName) return;
+
+    let newDate =
+        prompt(
+            "تاریخ تماس بعدی",
+            students[i].nextCall
+        );
+
+    if (!newDate) return;
+
+    students[i].name =
+        newName;
+
+    students[i].nextCall =
+        newDate;
+
+    save();
+}
+
+function cancelStudent(i) {
+
+    const s = students[i];
+
+    if (!s.cancelled) {
+
+        if (confirm("انتقال به لیست کنسل‌ها؟")) {
+            s.cancelled = true;
+        }
+
+    } else {
+
+        if (confirm("برگشت به لیست شاگردها؟")) {
+            s.cancelled = false;
+        }
+    }
+
+    save();
+}
+
+function restoreStudent(i) {
+
+    if (!confirm("برگرده به لیست فعال؟")) return;
+
+    students[i].cancelled = false;
+    save();
+}
+
+function render() {
+
+    let tbody =
+        document.getElementById("students");
+
+    let overdue =
+        document.getElementById("overdue");
+
+    let today =
+        document.getElementById("today");
+
+    let cancelled =
+        document.getElementById("cancelled");
+
+    tbody.innerHTML = "";
+    overdue.innerHTML = "";
+    today.innerHTML = "";
+cancelled.innerHTML = "";
+
+    let q =
+        document
+        .getElementById("search")
+        .value
+        .toLowerCase();
+
+    students.forEach((s, i) => {
+
+        if (s.cancelled) {
+
+cancelled.innerHTML += `
+<li style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px;
+    background:#fee2e2;
+    border-radius:10px;
+    margin-bottom:8px;
+">
+    <span>${s.name}</span>
+
+    <div>
+        <button onclick="restoreStudent(${i})"
+        style="background:#22c55e;color:white">
+        🔄 بازگردانی
+        </button>
+
+        <button onclick="deleteStudent(${i})"
+        style="background:#ef4444;color:white">
+        🗑 حذف
+        </button>
+    </div>
+</li>
+`;
+            return;
+        }
+
+        if (
+            !s.name
+            .toLowerCase()
+            .includes(q)
+        ) return;
+
+        const st =
+            status(s.nextCall);
+
+        if (st === "رد شده") {
+
+            overdue.innerHTML +=
+                `<li>${s.name}</li>`;
+
+            s.planSent = false;
+        }
+
+        if (st === "امروز") {
+
+            today.innerHTML +=
+                `<li>${s.name}</li>`;
+
+        }
+
+const planState = getPlanButtonState(s);
+
+const planClass = planState.class;
+const planText = planState.text;
+
+        let color = "";
+
+        if (st === "رد شده")
+            color = "red";
+
+        if (st === "امروز")
+            color = "orange";
+
+        if (st === "آینده")
+            color = "green";
+
+        tbody.innerHTML += `
+
+        <tr>
+
+            <td>${s.name}</td>
+
+            <td>${s.lastCall}</td>
+
+            <td>${s.nextCall}</td>
+
+            <td style="color:${color};font-weight:bold">
+
+                ${st}
+
+            </td>
+
+            <td>
+
+                <button
+                onclick="togglePlan(${i})"
+                class="${planClass}">
+
+                ${planText}
+
+                </button>
+
+            </td>
+
+            <td>
+
+                <button
+                onclick="callDone(${i})">
+
+                📞 تماس گرفته شد
+
+                </button>
+
+                <button
+                onclick="editStudent(${i})">
+
+                ✏️ ویرایش
+
+                </button>
+
+                <button
+                onclick="cancelStudent(${i})">
+
+                ❌ کنسل
+
+                </button>
+
+<button onclick="deleteStudent(${i})" style="background:#111;color:white">
+🗑 حذف
+</button>
+
+            </td>
+
+        </tr>
+
+        `;
+    });
+
+    localStorage.setItem(
+        "students",
+        JSON.stringify(students)
+    );
+
+}
+
+function deleteStudent(i) {
+
+    if (!confirm("⚠ آیا مطمئنی می‌خوای این دانش‌آموز را کامل حذف کنی؟ این کار غیرقابل بازگشت است")) {
+        return;
+    }
+
+    students.splice(i, 1);
+    save();
+}
+function togglePlan(i) {
+
+    const s = students[i];
+
+    const st = status(s.nextCall);
+
+    // اگر زمان گذشته یا امروز است، اجازه نده
+    if (st !== "آینده") {
+        alert("فقط برای تماس‌های آینده می‌توان برنامه ارسال کرد");
+        return;
+    }
+
+    s.planSent = !s.planSent;
+
+    save();
+}
+
+render();
+</script>
+<div id="studentModal"
+style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.5);
+justify-content:center;
+align-items:center;
+z-index:9999;
+">
+
+<div style="
+background:white;
+padding:20px;
+border-radius:10px;
+width:350px;
+">
+
+<h4>دانش آموز</h4>
+
+<input
+id="studentName"
+class="form-control mb-3"
+placeholder="نام دانش آموز">
+
+<input
+id="studentDate"
+class="form-control mb-3">
+
+<button
+class="btn btn-success"
+onclick="saveStudent()">
+
+ثبت
+
+</button>
+
+<button
+class="btn btn-secondary"
+onclick="closeModal()">
+
+انصراف
+
+</button>
+
+</div>
+
+</div>
+</body>
+</html>
